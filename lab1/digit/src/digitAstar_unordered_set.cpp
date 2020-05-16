@@ -13,6 +13,7 @@
 clock_t start_time;
 #define CHECK_EQUAL_MAX_DEPTH 50
 #define STEP_COST 10
+#define MAX_INDEX_LIMIT 10000000
 
 const int g_weight[] = {
     0,
@@ -66,7 +67,7 @@ struct node_cmp
     {
         // if (a->fValue > b->fValue)
         //    return true;
-        // else if (a->fValue == b->fValue && a->hValue < b->hValue)
+        // else if (a->fValue == b->fValue && a->hValue > b->hValue)
         //    return true;
         // return false;
 	    return a->fValue > b->fValue;
@@ -77,6 +78,11 @@ inline int max(int a, int b)
 {
     return a > b ? a : b;
 }
+
+#define CHECK(X, Y, N) (isValid((X), (Y)) && N->state[(X)][(Y)] == 0)
+
+std::priority_queue<Node *, std::vector<Node *>, node_cmp> nodePQueue;
+std::unordered_set<std::string> closedSet;
 
 // Calculate Manhattan Distance Sum of node.
 int calc_node_value(Node *node, int gValue){
@@ -144,6 +150,7 @@ void print_node(Node *node)
     }
     std::cout << "State_key: " << node->state_key << std::endl;
     printf("\nSevenPos: (%d, %d)\n", node->sevenPos.x, node->sevenPos.y);
+    printf("\nSet size: %ld\n Queue_size: %ld\n", closedSet.size(), nodePQueue.size());
     printf("\nfValue: %d\ngValue: %d\nhValue: %d\n================================\n", node->fValue, node->gValue, node->hValue);
 }
 
@@ -166,10 +173,6 @@ void print_res(Node *node)
     // print_node(node);
 }
 
-#define CHECK(X, Y, N) (isValid((X), (Y)) && N->state[(X)][(Y)] == 0)
-
-std::priority_queue<Node *, std::vector<Node *>, node_cmp> nodePQueue;
-std::unordered_set<std::string> closedSet;
 int minH = 2147483647;
 
 /* Check functions. */
@@ -298,7 +301,7 @@ int makeNode (Node *src, Node *dest,
 void search()
 {
     Node *now, *nextNode;
-    int index = 1;
+    int index = 0;
     gbl_index = &index;
     int status;
 
@@ -318,6 +321,17 @@ void search()
             printf("\n-----NOT MINH-----     Current minH = %d\nIndex: %d\n", minH, index);
             print_node(now);
         }
+
+        if (index >= MAX_INDEX_LIMIT)
+        {
+            printf("\n-----NOT MINH-----     Current minH = %d\nIndex: %d\n", minH, index);
+            print_node(now);
+            time_t stop_time = clock();
+            printf("\n----- Reached MAX index limit: %d -----\n", MAX_INDEX_LIMIT);
+            printf("Searching takes: %.5lf seconds\n", (double)(stop_time - start_time) / CLOCKS_PER_SEC);
+            exit(0);
+        }
+
         // try to move '7' block
         bool canMoveSeven = true;
         int sevenX = now->sevenPos.x, sevenY = now->sevenPos.y;
