@@ -4,13 +4,13 @@
 
 - **digitAstar_initial.cpp**: 最初的版本，线性查重无优化。
 
-- **digitAstar_departed.cpp**: 仍然线性查重，但是为测试集三加入了特定的优化（分成两步），可以跑出小于100步的解。
+- **digitAstar_stage.cpp**: 仍然线性查重，但是为测试集三加入了特定的优化（分成两阶段），可以跑出小于100步的解。
 
 - **digitAstar_unordered_set.cpp**: 使用STL unordered set，利用内置hash结构进行查找优化。
 
 ```shell
 make initial # 生成初始源代码对应的可执行程序
-make departed # 生成第一次优化后的程序
+make stage # 生成第一次优化后的程序
 make uos # 生成个第二次优化后的程序
 
 make     # 生成所有程序
