@@ -1,0 +1,9 @@
+/image/
+trash/
+backup/
+*.out
+/sudoku(1).zip
+.vscode
+
+# Temporal
+/sudoku/
