@@ -1,4 +1,4 @@
 #!/bin/sh
 
 make uos
-./digitAstar_unordered_set 3.txt
+./digitAstar_unordered_set.out 3.txt
