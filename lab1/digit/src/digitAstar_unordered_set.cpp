@@ -17,8 +17,8 @@ clock_t start_time;
 
 const int g_weight[] = {
     0,
-    10,  10, 10, 10, 10,
-    10,  10, 10, 10, 10,
+    20,  18, 15, 12, 10,
+    15,  30, 10, 10, 10,
              10, 10, 10,
     10,  10, 10, 10, 10,
     10,  10, 10
@@ -150,7 +150,7 @@ void print_node(Node *node)
     }
     std::cout << "State_key: " << node->state_key << std::endl;
     printf("\nSevenPos: (%d, %d)\n", node->sevenPos.x, node->sevenPos.y);
-    printf("\nSet size: %ld\n Queue_size: %ld\n", closedSet.size(), nodePQueue.size());
+    printf("\nSet size: %ld\nQueue_size: %ld\n", closedSet.size(), nodePQueue.size());
     printf("\nfValue: %d\ngValue: %d\nhValue: %d\n================================\n", node->fValue, node->gValue, node->hValue);
 }
 

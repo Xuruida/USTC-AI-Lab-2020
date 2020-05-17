@@ -285,7 +285,8 @@ int makeNode (Node *src, Node *dest,
         printf("Searching takes: %.5lf seconds\n", (double)(stop_time - start_time) / CLOCKS_PER_SEC);
         print_node(dest);
         print_res(dest);
-        // exit(0);
+        if (stage==1)
+            exit(0);
     }
     return 0;
 }
