@@ -28,3 +28,15 @@ sh ./run.sh   # 编译运行第二次优化后的 A* 算法程序，并输入测
 程序输入为初始状态矩阵，运行过程中每次找到最小的启发函数或当前节点(Index % 100000 == 0)时输出一次当前节点状态。
 
 找到第一个结束时给出序列，程序停止运行。
+
+## IDA* 算法
+
+- **digitIDAStar.cpp:** 基于最后优化的A\*算法改良后的IDA\*算法。
+
+编译运行方法：
+
+```shell
+g++ digitIDAStar.cpp -o digitIDAStar.out
+./digitIDAStar.out 1.txt
+```
+
