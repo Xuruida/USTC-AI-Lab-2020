@@ -4,38 +4,6 @@ PB17000209 许睿达
 
 [TOC]
 
-## 文件目录结构
-
-```
-.
-├── digit
-│   ├── input
-│   │   ├── 1.txt
-│   │   ├── 2.txt
-│   │   └── 3.txt
-│   └── src
-│       ├── digitAstar_initial.cpp
-│       ├── digitAstar_stage.cpp
-│       ├── digitAstar_unordered_set.cpp
-│       ├── digitIDAStar.cpp
-│       ├── Makefile
-│       ├── param.md
-│       └── readme.md
-├── EXP1_2020.pdf
-├── report.md
-└── sudoku
-    ├── input
-    │   ├── mytest.txt
-    │   ├── sudoku01.txt
-    │   ├── sudoku02.txt
-    │   └── sudoku03.txt
-    └── src
-        └── sudoku.cpp
-
-6 directories, 17 files
-
-```
-
 ## P1 数码问题
 
 源代码编译运行方法见`./digit/src/readme.md`
@@ -284,4 +252,59 @@ Detail:
 
 ## P2 X数独问题
 
-对问题
+问题只需要递归进行回溯搜索即可。
+
+伪代码如下：
+
+```pseudocode
+// backtracking
+bool backtracking_search(int matrix[][9], int x, int y)
+    bo = false;
+    if (x > 9)
+        return true;
+    for tryNum = 1 to 9 do
+        if tryNum in position(x, y) is valid
+            matrix[x][y] = tryNum
+            find_next(matrix, x, y);
+            if (backtracking(matrix, x, y)) return true;
+            matrix[x][y] = 0;
+     return false;
+```
+
+其中find_next若依次按照顺序，则是未使用度启发式优化的版本，如果对矩阵进行遍历找到度最小的位置，则是采用MRV优化的版本，具体信息见`./sudoku/src/readme.md`
+
+### 优化结果比较
+
+```powershell
+.\sudoku.exe sudoku01.txt
+Index: 111
+Searching takes: 0.00100 seconds
+
+.\sudoku.exe sudoku02.txt
+Index: 14853
+Searching takes: 0.00700 seconds
+
+.\sudoku.exe sudoku03.txt 
+Index: 4233934
+Searching takes: 0.95300 seconds
+
+=================================
+
+.\sudoku_opt.exe sudoku01.txt
+Index: 47
+Searching takes: 0.00200 seconds
+
+.\sudoku_opt.exe sudoku02.txt
+Index: 107
+Searching takes: 0.00300 seconds
+
+.\sudoku_opt.exe sudoku03.txt
+Index: 3793
+Searching takes: 0.04200 seconds
+```
+
+可以发现，优化后的节点数显著减少，成功提升了大量的效率。
+
+## 思考题
+
+数独问题可以尝试使用这几类局部搜索算法去解决，例如，使用不合法的数字个数作为评价函数，目标则是让这个评价函数为0。然而，使用爬山算法很有可能会使得问题搜索进入瓶颈，从而无法找到解。模拟退火和遗传算法则分别通过概率和解杂交的方式让陷入瓶颈的概率变小。所以我认为是可行的，但是搜索的效率可能并不像求解CSP问题的回溯算法那样简单高效。因为实际上在问题域很大，但其实限制条件很多，并且可行域很小的情况下，如果局部搜索算法的随机取值很可能使得问题的求解变得缓慢。

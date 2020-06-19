@@ -10,6 +10,7 @@
 #include<unordered_set>
 #include<list>
 
+FILE *fpout;
 clock_t start_time;
 #define CHECK_EQUAL_MAX_DEPTH 50
 #define STEP_COST 10
@@ -150,7 +151,6 @@ void print_node(Node *node)
     }
     std::cout << "State_key: " << node->state_key << std::endl;
     printf("\nSevenPos: (%d, %d)\n", node->sevenPos.x, node->sevenPos.y);
-    printf("\nSet size: %ld\nQueue_size: %ld\n", closedSet.size(), nodePQueue.size());
     printf("\nfValue: %d\ngValue: %d\nhValue: %d\n================================\n", node->fValue, node->gValue, node->hValue);
 }
 
@@ -171,6 +171,7 @@ void print_res(Node *node)
     else
         printf("(%d, %c)\n", node->num, node->direction);
     // print_node(node);
+    fprintf(fpout, "(%d, %c);\n", node->num, node->direction);
 }
 
 int minH = 2147483647;
@@ -202,6 +203,10 @@ void init(char *fileName)
     strcat(path, fileName);
     if (!(fpin = fopen(path, "r+")))
         exit(-1);
+    char pathout[100] = "../output/";
+    strcat(pathout, fileName);
+    fpout = fopen(pathout, "w+");
+
     int tmp[5];
     initNode = new Node;
     for (int i = 0; i < 5; i++)

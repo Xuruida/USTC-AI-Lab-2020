@@ -11,7 +11,7 @@
 ```shell
 make initial # 生成初始源代码对应的可执行程序
 make stage # 生成第一次优化后的程序
-make uos # 生成个第二次优化后的程序
+make uos # 生成第二次优化后的程序
 
 make     # 生成所有程序
 
@@ -22,7 +22,7 @@ sh ./run.sh   # 编译运行第二次优化后的 A* 算法程序，并输入测
 
 例：
 ```shell
-./digitAstar_initial.out 1.txt # 利用1.txt作为输入
+./digitAstar_initial.exe 1.txt # 利用1.txt作为输入
 ```
 
 程序输入为初始状态矩阵，运行过程中每次找到最小的启发函数或当前节点(Index % 100000 == 0)时输出一次当前节点状态。
@@ -37,6 +37,13 @@ sh ./run.sh   # 编译运行第二次优化后的 A* 算法程序，并输入测
 
 ```shell
 g++ digitIDAStar.cpp -o digitIDAStar.out
-./digitIDAStar.out 1.txt
+./digitIDAStar.exe 1.txt
+```
+
+或
+
+```shell
+make ida
+./digitIDAStar.exe 1.txt
 ```
 

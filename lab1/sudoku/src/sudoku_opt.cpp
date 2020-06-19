@@ -5,7 +5,6 @@
 #include <time.h>
 
 time_t start_time;
-
 int nodeNum = 0;
 FILE *fpout;
 void print_matrix(int matrix[][9])
@@ -27,25 +26,47 @@ void print_matrix(int matrix[][9])
 }
 inline bool checkNum(int num, int x, int y, int matrix[][9])
 {
-    for (int i = 0; i < 9;i++)
+    for (int i = 0; i < 9; i++)
         if (matrix[x][i] == num || matrix[i][y] == num)
             return false;
-    int rpos = 3 * (x / 3), cpos = 3*(y / 3);
-    for (int i = 0; i < 3;i++)
-        for (int j = 0; j < 3;j++)
+    int rpos = 3 * (x / 3), cpos = 3 * (y / 3);
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
             if (matrix[rpos + i][cpos + j] == num)
                 return false;
     if (x == y)
         for (int i = 0; i < 9; i++)
             if (matrix[i][i] == num)
                 return false;
-    if (x == 8-y)
-        for (int i = 0; i < 9;i++)
-            if (matrix[i][8-i] == num)
+    if (x == 8 - y)
+        for (int i = 0; i < 9; i++)
+            if (matrix[i][8 - i] == num)
                 return false;
     return true;
 }
 
+void find_next(int matrix[][9], int &nx, int &ny)
+{
+    int min = 10;
+    nx = ny = 9;
+    for (int i = 0; i < 9;i++)
+        for (int j = 0; j < 9;j++)
+            if (matrix[i][j] == 0)
+            {
+                int cnt = 0;
+                for (int k = 1; k <= 9;k++)
+                    if (checkNum(k, i, j, matrix))
+                        cnt++;
+                if (cnt < min)
+                {
+                    min = cnt;
+                    nx = i;
+                    ny = j;
+                }
+            }
+    // printf("%d  %d\n", nx, ny);
+    return;
+}
 inline bool isValid(int matrix[][9])
 {
     int col[10] = {0}, row[10] = {0};
@@ -59,18 +80,18 @@ inline bool isValid(int matrix[][9])
             col[matrix[j][i]]++;
             row[matrix[i][j]]++;
         }
-        for (int j = 1; j <= 9;j++)
+        for (int j = 1; j <= 9; j++)
             if (col[j] > 1 || row[j] > 1)
                 return false;
     }
-    for (int i = 0; i < 9;i++)
+    for (int i = 0; i < 9; i++)
     {
         diag1[matrix[i][i]]++;
         diag2[matrix[8 - i][i]]++;
     }
-    for (int i = 1; i <= 9;i++)
+    for (int i = 1; i <= 9; i++)
     {
-        if (diag1[i]>1 || diag2[i]>1)
+        if (diag1[i] > 1 || diag2[i] > 1)
             return false;
     }
     return true;
@@ -81,18 +102,6 @@ bool backtracking_search(int matrix[][9], int x, int y)
     nodeNum++;
     // print_matrix(matrix);
     bool bo = false;
-    for (; x < 9; x++)
-    {
-        for (; y < 9; y++)
-            if (matrix[x][y] == 0)
-            {
-                bo = true;
-                break;
-            }
-        if (bo)
-            break;
-        y = 0;
-    }
     if (x >= 9)
         return true;
 
@@ -101,7 +110,10 @@ bool backtracking_search(int matrix[][9], int x, int y)
         if (checkNum(tryNum, x, y, matrix))
         {
             matrix[x][y] = tryNum;
-            if (backtracking_search(matrix, x, y)) return true;
+            int nx, ny;
+            find_next(matrix, nx, ny);
+            if (backtracking_search(matrix, nx, ny))
+                return true;
             matrix[x][y] = 0;
         }
     }
@@ -113,7 +125,7 @@ void init(char *inputName)
 {
     FILE *fpin;
     char path[100] = "../input/";
-    
+
     // Read data
     strcat(path, inputName);
     if (!(fpin = fopen(path, "r+")))
@@ -121,11 +133,9 @@ void init(char *inputName)
         printf("Cannot open input file!");
         exit(-1);
     }
-
     char pathout[100] = "../output/";
     strcat(pathout, inputName);
     fpout = fopen(pathout, "w+");
-
     int matrix[9][9];
     for (int i = 0; i < 9; i++)
         for (int j = 0; j < 9; j++)
@@ -136,8 +146,10 @@ void init(char *inputName)
         printf("Input matrix invalid\n");
         return;
     }
+    int nx, ny;
     start_time = clock();
-    if (!backtracking_search(matrix, 0, 0))
+    find_next(matrix, nx, ny);
+    if (!backtracking_search(matrix, nx, ny))
     {
         printf("NO Possible result\n");
         return;

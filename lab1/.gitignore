@@ -4,3 +4,4 @@ backup/
 *.out
 /sudoku(1).zip
 .vscode
+*.exe

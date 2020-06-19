@@ -7,6 +7,7 @@
 #include<list>
 #include<time.h>
 
+FILE *fpout;
 clock_t start_time;
 #define CHECK_EQUAL_MAX_DEPTH 50
 #define STEP_COST 10
@@ -128,6 +129,7 @@ void print_res(Node *node)
     }
     printf("(%d, %c)\n", node->num, node->direction);
     // print_node(node);
+    fprintf(fpout, "(%d, %c);\n", node->num, node->direction);
 }
 
 #define CHECK(X, Y, N) (isValid((X), (Y)) && N->state[(X)][(Y)] == 0)
@@ -168,6 +170,10 @@ void init(char *fileName)
     strcat(path, fileName);
     if (!(fpin = fopen(path, "r+")))
         exit(-1);
+
+    char pathout[100] = "../output/";
+    strcat(pathout, fileName);
+    fpout = fopen(pathout, "w+");
 
     initNode = new Node;
     for (int i = 0; i < 5; i++)
