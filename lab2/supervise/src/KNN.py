@@ -5,9 +5,11 @@ import math
 import time
 
 # calculate distance
-def calc_dis(a: list, b: list):
+
+
+def calc_dis(a: np.array, b: np.array):
     """
-    Calculate Euclid Distance of two data.
+    Calculate Euclidian Distance of two data.
     Return distance.
     """
     sum = 0
@@ -17,73 +19,51 @@ def calc_dis(a: list, b: list):
     return result
 
 # KNN
-def knn_fit(train_set: pd.DataFrame, test_set: pd.DataFrame, k_value: int):
+def knn_classify(train_set: pd.DataFrame, train_label: pd.DataFrame, test_set: pd.DataFrame, k_value: int):
     """
-    Use kNN method to predict G3.
-    Return Score.
+    KNN Classify 'G3' in train_label
     """
 
     start_t = time.clock()
 
-    print(train_set.shape[0], test_set.shape[0])
-    predict_list = pd.DataFrame(index=test_set.index, data=test_set['G3'])
-    dis_list = pd.DataFrame(index=train_set.index, columns=['G3'], data=train_set['G3'])
-    print(predict_list)
-    test_set = test_set.drop('G3', axis=1)
+    print(train_set.shape[0], test_set.shape[0], "\n")
 
-    train_set_dropped_G3 = train_set.drop('G3', axis=1)
-    
-    for i, test_row in test_set.iterrows():
-        print(i, test_row.values)
-        # t1 = time.clock()
-        for j, train_row in train_set_dropped_G3.iterrows():
-            distance = calc_dis(test_row.to_list(),
-                train_row.to_list())
-            dis_list.loc[j, 'distance'] = distance
-        # t2 = time.clock()
-        # print('TIME: %f', t2 - t1)
-        dis_list = dis_list.sort_values(by='distance', ascending=True)
-        # print(dis_list.iloc[:k_value])
+    # initialize
+    predict_arr = np.zeros(test_set.shape[0], dtype=int)
+    distance_arr = np.zeros(train_set.shape[0], dtype=float)
+
+    # Transform DataFrame to NumPy
+    train_set_arr = train_set.to_numpy()
+    train_label_arr = train_label['G3'].to_numpy()
+    # print(train_label_arr)
+    test_set_arr = test_set.to_numpy()
+
+    for i, test_data in enumerate(test_set_arr):
+        # print(i, test_data)
+
+        for j, train_data in enumerate(train_set_arr):
+            distance_arr[j] = calc_dis(test_data, train_data)
+
+        dis_rank = np.argsort(distance_arr)
+        
+        nearest_label_arr = train_label_arr[dis_rank[:k_value]]
+
+        #print(dis_rank[:k_value],
+        #      distance_arr[dis_rank[:k_value]],
+        #      nearest_label_arr,
+        #      sep='\n'
+        #      )
         pass_cnt = 0
-        for j in range(k_value):
-            if (dis_list.iloc[j].loc['G3'] >= 10):
-                pass_cnt += 1
-        if (pass_cnt >= k_value - pass_cnt):
-            predict_list.loc[i, 'pred'] = 'P' # Pass
+        for item in nearest_label_arr:
+            if item == 1:
+                pass_cnt = pass_cnt + 1
+        # print(pass_cnt)
+        if pass_cnt >= k_value - pass_cnt:
+            predict_arr[i] = 1
         else:
-            predict_list.loc[i, 'pred'] = 'F' # Fail
-        # print(i, pass_cnt, '\n', dis_list.iloc[:k_value])
+            predict_arr[i] = 0
 
-    print(predict_list)
-
-    TP, FP, TN, FN = 0, 0, 0, 0
-    for i in predict_list.index:
-        pred_row = predict_list.loc[i]
-        if (pred_row['G3'] >= 10):
-            if (pred_row.pred == 'P'):
-                TP += 1
-            else:
-                FN += 1
-        else:
-            if (pred_row.pred == 'P'):
-                FP += 1
-            else:
-                TN += 1
-    
-    print('TP: %d; FP: %d; TN: %d; FN: %d.' % (TP, FP, TN, FN))
-
-    P_rate = TP / (TP + FP)
-    R_rate = TP / (TP + FN)
-    F1_score = (2 * P_rate * R_rate) / (P_rate + R_rate)
-
-    print('F1 Score: %f' % F1_score)
-
-    stop_t = time.clock()
-    print('time: ', stop_t - start_t)
-    
-    res_dict = {
-        'F1_score': F1_score,
-        'pred_result': predict_list
-    }
-
-    return res_dict
+    print(predict_arr)
+    predict_label = pd.Series(data=predict_arr, index=test_set.index, name="predict")
+    print(predict_label)
+    return predict_label
