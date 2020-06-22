@@ -13,79 +13,25 @@ from cvxopt import solvers, matrix
 #      A*x = b.
 
 import math
-
-
 class KernelFunc:
-    """
-    KernelFunc:
-        Defines 3 types of kernel functions.
-    """
-
     class Linear:
-        """
-        linear kernel: K(xi, xj) = xi * xj (* = \cdot)
-        """
-        name = "Linear"
-        def val(self, xi: np.array, xj: np.array):
+        def val(self, xi:np.array, xj: np.array):
             return np.sum(xi * xj)
-
+    
     class RBF:
-        """
-        rbf kernel: K(xi, xj) = exp{||xi - xj|| / sigma^2}
-        """
         sigma = 1
-        name = "RBF: "
-        def __init__(self, sigma=1):  # Constuct Func
+        def __init__(self, sigma=1): # Constuct Func
             self.sigma = sigma
-            self.name += "sigma = %f" % self.sigma
 
         def val(self, xi: np.array, xj: np.array):
-            return math.exp(-(np.sum((xi - xj) ** 2) ** 0.5 / (self.sigma ** 2)))
+            return math.exp(-((np.sum((xi - xj) ** 2) ** 0.5) / (self.sigma ** 2)))
 
-    class Poly:
-        """
-        Polynomial kernel: K(xi, xj) = (xi * xj + c)^d (* = \cdot)
-        """
-        d = 2  # default: square
-        c = 0
-        name = "Polynomial: "
-        def __init__(self, d=2, c=0):
-            self.d, self.c = d, c
-            self.name += "d = %d, c = %d" % (d, c)
-
-        def val(self, xi: np.array, xj: np.array):
-            return (np.sum(xi * xj) + self.c) ** self.d
-        
 def svm_classify(train_set: pd.DataFrame,
                  train_label: pd.DataFrame,
                  test_set: pd.DataFrame,
                  C: float,
-                 kernel=KernelFunc.Linear(),
-                 cut_value=0
+                 kernel=KernelFunc.Linear()
                  ):
-    """
-    SVM Classify Function:
-
-    input args:
-        train_set, train_label, test_set, C;
-
-        kernel:
-            Type of kernel function.
-            the value can be one of those:
-                KernelFunc.Linear()
-                KernelFunc.RBF(sigma=1)
-                KernelFunc.Poly(d=2, c=0)
-        
-        cut_value:
-            the alpha result under cut_value will be assigned to 0.
-            # alpha[alpha <= cut_value] = 0
- 
-            After cutting those small numbers, 
-            the process of finding support vector(sv) could have more accuracy.
-            
-    output arg:
-        predict_label: the predict result.
-    """
 
     print('__svm_classfiy__')
     print(train_set, train_label, test_set, sep='\n')
@@ -111,22 +57,23 @@ def svm_classify(train_set: pd.DataFrame,
     b = matrix(0.)
     G = matrix(np.vstack((-np.eye(train_size), np.eye(train_size))))
     h = matrix(np.hstack((-np.zeros(train_size), C * np.ones(train_size))))
-
+    
     # print(P, q, A, b, G, h)
-
+    
     sv = solvers.qp(P, q, G, h, A, b)
     alpha = np.transpose(np.array(sv['x']))[0]
 
+    cut_value = 1e-6
     alpha[alpha <= cut_value] = 0
     sv_index = np.where(alpha > cut_value)[0]
     print(alpha, sv_index, sep='\n')
 
     '''
-    # we only need w in linear kernel, so I deleted it
+    # we only need w in linear case, delete it
     result_w = np.zeros(train_set.shape[1])
     for i in range(train_size):
         # print(result_alpha[i]*y[i]*x[i])
-        result_w += alpha[i] * y[i] * x[i]
+        result_w += result_alpha[i] * y[i] * x[i]
     print('w:', result_w)
     '''
 
@@ -135,12 +82,11 @@ def svm_classify(train_set: pd.DataFrame,
         # print(i, y[i] - np.sum(result_w * x[i]))
         sum_val = 0
         for j in range(train_size):
-            # Use specified kernel function
-            sum_val += alpha[j] * y[j] * kernel.val(x[i], x[j])
-        b += y[i] - sum_val
+            sum_val += alpha[j] * y[j] * kernel.val(x[i], x[j]) # Use specified kernel function
+        b += sum_val
     b = b / len(sv_index)
     print('b:', b)
-
+    
     # Plot (Only 2 Dimensions) (i.e. G1, G2):
     # for i in range(train_size):
     #     if y[i] < 0:
@@ -158,12 +104,10 @@ def svm_classify(train_set: pd.DataFrame,
     predict_arr = np.zeros(test_set.shape[0], dtype=int)
     for i, test_data in enumerate(test_arr):
         pred_val = 0
-        for j in range(train_size):
-            pred_val += alpha[j] * y[j] * kernel.val(x[j], test_data)
+        for j in sv_index:
+            pred_val = alpha[j] * y[j] * kernel.val(x[j], test_data)
         pred_val += b
-        predict_arr[i] = 1 if pred_val >= 0 else - 1
-        
-    predict_label = pd.Series(index=test_set.index,
-                              data=predict_arr, name="predict")
+        predict_arr[i] = 1 if pred_val >= 0 else -1
+    predict_label = pd.Series(index=test_set.index, data=predict_arr, name="predict")
     print(predict_label)
     return predict_label
