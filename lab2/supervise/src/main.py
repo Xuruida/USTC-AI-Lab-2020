@@ -71,6 +71,7 @@ if __name__ == '__main__':
     test_label = [df.loc[:, 'G3'][~df.index.isin(
         train_set[x].index)] for x in range(len(seed_list))]
 
+    # KNN Classify
     KNN_predict_label = []
     KNN_score_list = np.zeros(len(seed_list))
 
@@ -78,9 +79,10 @@ if __name__ == '__main__':
     K = 9
     for i in range(len(seed_list)):
         print("\niteration: ", i)
-        print("train_set %d:" % i, train_set[i], "train_label %d:" % i, train_label[i], "test_set %d:" % i, test_set[i], sep='\n')
+        print("train_set %d:" % i, train_set[i], "train_label %d:" %
+              i, train_label[i], "test_set %d:" % i, test_set[i], sep='\n')
         KNN_predict_label.append(KNN.knn_classify(
-            train_set[i], train_label[i], test_set[i], 5))
+            train_set[i], train_label[i], test_set[i], K))
         print(test_label[i])
         KNN_score_list[i] = get_score(
             KNN_predict_label[i].to_numpy(), test_label[i].to_numpy())
@@ -89,12 +91,17 @@ if __name__ == '__main__':
     SVM_predict_label = []
     SVM_score_list = np.zeros(len(seed_list))
 
+    # SVM Classify
     import SVM
+    linear_ker = SVM.KernelFunc.Linear() # Spicify Kernel: Linear, RBF
     C = 10
     for i in range(len(seed_list)):
+        print("\niteration: ", i)
         SVM_predict_label.append(SVM.svm_classify(
-            train_set[i], train_label[i], test_set[i], C))
+            train_set[i], train_label[i], test_set[i], C, kernel=linear_ker))
         SVM_score_list[i] = get_score(
             SVM_predict_label[i].to_numpy(), test_label[i].to_numpy())
-    print("KNN:", KNN_score_list, sep='\n')
-    print("SVM: \nC: %f" % C, "Score_list:", SVM_score_list, sep='\n')
+    print("----------\nKNN:\n", "Score_list:",
+          KNN_score_list, "Average Score:", np.mean(KNN_score_list), sep='\n')
+    print("----------\nSVM: \n\nC: %f" % C, "Score_list:",
+          SVM_score_list, "Average Score:", np.mean(SVM_score_list), sep='\n')

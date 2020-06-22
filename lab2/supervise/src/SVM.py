@@ -3,18 +3,31 @@ import pandas as pd
 import matplotlib.pyplot as plt
 # solvers.qp() can solve quadprog problem
 from cvxopt import solvers, matrix
-
+import math
 #  cvxopt.solvers.qp():
 #      Solves a quadratic program
 #      minimize(1/2)*x'*P*x + q'*x
 #      subject to  G*x <= h
 #      A*x = b.
+class KernelFunc:
+    class Linear:
+        def val(self, xi:np.array, xj: np.array):
+            return np.sum(xi * xj)
+    
+    class RBF:
+        sigma = 1
+        def __init__(self, sigma=1): # Constuct Func
+            self.sigma = sigma
 
+        def val(self, xi: np.array, xj: np.array):
+            return math.exp(-((np.sum((xi - xj) ** 2) ** 0.5) / (self.sigma ** 2)))
 
 def svm_classify(train_set: pd.DataFrame,
                  train_label: pd.DataFrame,
                  test_set: pd.DataFrame,
-                 C: float):
+                 C: float,
+                 kernel=KernelFunc.Linear()
+                 ):
 
     print('__svm_classfiy__')
     print(train_set, train_label, test_set, sep='\n')
@@ -29,8 +42,8 @@ def svm_classify(train_set: pd.DataFrame,
     P = np.zeros((train_size, train_size))
     for i in range(train_size):
         for j in range(train_size):
-            P[i][j] = y[i] * y[j] * np.sum(x[i] * x[j])
-    # print(P)
+            P[i][j] = y[i] * y[j] * kernel.val(x[i], x[j])
+    print(P)
     P = matrix(P)
     q = matrix(-np.ones(train_size))
     A = matrix(y, (1, train_size))
@@ -72,6 +85,7 @@ def svm_classify(train_set: pd.DataFrame,
     # plt.plot(plot_x, plot_y)
     # plt.show()
 
+    # Prediction
     test_arr = test_set.to_numpy()
     predict_arr = np.zeros(test_set.shape[0], dtype=int)
     for i, test_data in enumerate(test_arr):
