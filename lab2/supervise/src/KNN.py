@@ -61,7 +61,7 @@ def knn_classify(train_set: pd.DataFrame, train_label: pd.DataFrame, test_set: p
         if pass_cnt >= k_value - pass_cnt:
             predict_arr[i] = 1
         else:
-            predict_arr[i] = 0
+            predict_arr[i] = -1
 
     print(predict_arr)
     predict_label = pd.Series(data=predict_arr, index=test_set.index, name="predict")

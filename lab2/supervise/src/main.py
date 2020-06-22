@@ -1,4 +1,3 @@
-import KNN
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_string_dtype
@@ -9,6 +8,8 @@ def get_score(pred_label, test_label):
     if len(pred_label) != len(test_label):
         print("Length Error.")
         return (-1)
+
+    print(pred_label, test_label, sep='\n')
 
     TP, FN, FP, TN = 0, 0, 0, 0
 
@@ -32,6 +33,7 @@ def get_score(pred_label, test_label):
     print(F1_score)
     return F1_score
 
+
 if __name__ == '__main__':
     # Read from csv file
     file = pd.read_csv('../data/student-mat.csv', delimiter=';')
@@ -53,27 +55,46 @@ if __name__ == '__main__':
             # print(column_fit)
             df[index] = column_fit
 
-    df['G3'] = df['G3'].apply(lambda x: 1 if x >= 10 else 0)
+    df['G3'] = df['G3'].apply(lambda x: 1 if x >= 10 else -1)
     print(df)
 
     seed_list = [10, 32, 63, 1024, 1621]
 
     # df.loc[:, ['G1', 'G2']] # Use G1, G2
     # df.drop('G3') # Use Attr without G3
-    train_set = [df.loc[:, ['G1', 'G2']].sample(
+    train_set = [df.drop(['G3'], axis=1).sample(
         frac=0.7, random_state=x, axis=0).sort_index(axis=0) for x in seed_list]
-    test_set = [df.loc[:, ['G1', 'G2']][~df.index.isin(
+    test_set = [df.drop(['G3'], axis=1)[~df.index.isin(
         train_set[x].index)] for x in range(len(seed_list))]
     train_label = [df.loc[:, ['G3']].sample(
         frac=0.7, random_state=x, axis=0).sort_index(axis=0) for x in seed_list]
     test_label = [df.loc[:, 'G3'][~df.index.isin(
         train_set[x].index)] for x in range(len(seed_list))]
 
-    predict_label = []
-    score_list = np.zeros(len(seed_list))
+    KNN_predict_label = []
+    KNN_score_list = np.zeros(len(seed_list))
+
+    import KNN
+    K = 9
     for i in range(len(seed_list)):
         print("\niteration: ", i)
-        predict_label.append(KNN.knn_classify(train_set[i], train_label[i], test_set[i], 9))
+        print("train_set %d:" % i, train_set[i], "train_label %d:" % i, train_label[i], "test_set %d:" % i, test_set[i], sep='\n')
+        KNN_predict_label.append(KNN.knn_classify(
+            train_set[i], train_label[i], test_set[i], 5))
         print(test_label[i])
-        score_list[i] = get_score(predict_label[i].to_numpy(), test_label[i].to_numpy())
-    print(score_list)
+        KNN_score_list[i] = get_score(
+            KNN_predict_label[i].to_numpy(), test_label[i].to_numpy())
+    print(KNN_score_list)
+
+    SVM_predict_label = []
+    SVM_score_list = np.zeros(len(seed_list))
+
+    import SVM
+    C = 10
+    for i in range(len(seed_list)):
+        SVM_predict_label.append(SVM.svm_classify(
+            train_set[i], train_label[i], test_set[i], C))
+        SVM_score_list[i] = get_score(
+            SVM_predict_label[i].to_numpy(), test_label[i].to_numpy())
+    print("KNN:", KNN_score_list, sep='\n')
+    print("SVM: \nC: %f" % C, "Score_list:", SVM_score_list, sep='\n')
