@@ -1,10 +1,16 @@
 import numpy as np
 from PCA import PCA
 import kmeans
+import sys
 
 from plots import plot_2D, plot_3D, plot_2D_2
 
 if __name__ == '__main__':
+    threshold, k = 0.99, 3
+    if sys.argv[1:]:
+        threshold = float(sys.argv[1])
+    if sys.argv[2:]:
+        k = int(sys.argv[2])
     data_set = np.loadtxt("../input/wine.data", delimiter=',')
 
     # Processing the input data
@@ -21,12 +27,14 @@ if __name__ == '__main__':
     print(train_set)
     print(np.mean(train_set, axis=0), np.var(train_set, axis=0), sep='\n')
 
-    threshold = 1
     train_set_PCA = PCA(train_set, threshold)
 
+    if len(train_set_PCA) == 0:
+        print("Threshold is too small. Please input a bigger threshold.\n")
+        sys.exit(1)
     # plot_3D(train_set_PCA, label_set)
 
-    sil_coef, cluster_label = kmeans.kmeans_cluster(3, train_set_PCA)
+    sil_coef, cluster_label = kmeans.kmeans_cluster(k, train_set_PCA)
     # print(sil_coef)
     sil_coef_mean = np.mean(sil_coef)
 
@@ -50,4 +58,5 @@ if __name__ == '__main__':
           "\tDimension(s) After PCA: %d" % train_set_PCA.shape[1], sep='\n')
     print("Silhouette Coefficient: %lf" % sil_coef_mean)
     print("Rand Index: %lf" % rand_index)
-    plot_2D_2(train_set_PCA, label_set, cluster_label)
+    if train_set_PCA.shape[1] > 1:
+        plot_2D_2(train_set_PCA, label_set, cluster_label)
