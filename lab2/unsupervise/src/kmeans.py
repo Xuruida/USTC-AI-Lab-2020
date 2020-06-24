@@ -64,4 +64,42 @@ def kmeans_cluster(k: int, data: np.array):
                 centroids[i] = centroid_new
         print(centroids)
     
-    return cluster_label
+    # Calculate Silhouette Coefficient
+    sil_coef = np.zeros(n)
+
+    if n != 1:
+        for i in range(n):
+            cluster_idx = cluster_label[i] # Find Cluster index
+            # Calculate a(i)
+            data_in_i = data[cluster_label == cluster_idx]
+            distances = np.zeros(len(data_in_i))
+            for j in range(len(distances)):
+                distances[j] = get_euclidean_dis(data_in_i[j], data[i])
+            # print('a', distances)
+            a = np.sum(distances) / (len(data_in_i) - 1)
+            
+            # Calculate b(i)
+            b_arr = np.zeros(k)
+            for j in range(k):
+                if cluster_idx == j:
+                    continue
+                data_in_j = data[cluster_label == j]
+                distances_j = np.zeros(len(data_in_j))
+                for l in range(len(distances_j)):
+                    distances_j[l] = get_euclidean_dis(data[i], data_in_j[l])  # Distances to Cluster j
+                b_arr[j] = np.sum(distances_j) / len(data_in_j)
+                # print('dis %d' % j, distances_j)
+            # print('b', b_arr)
+
+            # Find the second minimal value (Distance to cluster_idx == 0)
+            b_arr[np.argmin(b_arr)] = np.max(b_arr) # 
+            b = np.min(b_arr)
+            # print(i, a, b)
+            sil_coef[i] = (b - a) / max(a, b)
+            # print(sil_coef[i])
+
+    else:
+        sil_coef[0] = 0
+
+    print('Silhouette Coefficient:', sil_coef, sep='\n')
+    return sil_coef, cluster_label

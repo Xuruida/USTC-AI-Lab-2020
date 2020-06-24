@@ -72,6 +72,10 @@ def plot_2D_2(train_set_PCA: np.array, label_set_1: np.array, label_set_2: np.ar
                 train_set_PCA[label_set_2 == 2, 1],
                 c='lightgreen',
                 marker='o')
+    plt.scatter(train_set_PCA[label_set_2 == 3, 0],
+                train_set_PCA[label_set_2 == 3, 1],
+                c='yellow',
+                marker='o')
     plt.grid(True)
     plt.title('K-means Cluster')
     plt.xlabel('x1')
